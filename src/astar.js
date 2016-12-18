@@ -11,7 +11,7 @@ function main() {
     }
 
     const WIDTH = 20;
-    const N = 32;
+    const N = 16;
 
     /* Lets create a NxN grid */
     var grid = (function(n) {
@@ -31,6 +31,8 @@ function main() {
         var grid_x = x;
         var grid_y = y;
         var color = 'white';
+        var parentNode;
+        var pathCost = 0;
 
         var weight = Math.floor(Math.random() * 8) + 1;
 
@@ -42,7 +44,6 @@ function main() {
             } else if (visited === true) {
                 color = '#532abc';
             } else if (fringe === true) {
-                console.log("reached here");
                 color = 'black';
             }
 
@@ -52,6 +53,20 @@ function main() {
             ctx.strokeRect(grid_x * WIDTH, grid_y * WIDTH, WIDTH, WIDTH);
             ctx.textAlign = 'center';
             ctx.fillText(weight + '', (grid_x * WIDTH) + WIDTH/2, (grid_y * WIDTH) + WIDTH * 2/3, WIDTH);
+        }
+
+        function updateParent(par) {
+            parentNode = par;
+            pathCost += par.getWeight();
+        }
+
+        function getParent() {
+            return parentNode;
+        }
+
+
+        function getWeight() {
+            return weight;
         }
 
         function setVisited() {
@@ -83,7 +98,7 @@ function main() {
                         continue;
                     }
                     let neighbor = grid[nb_x][nb_y];
-                    if (neighbor.visited === true) {
+                    if (neighbor.isVisited() === true || neighbor.isFringe() === true) {
                         continue;
                     }
                     successors.push(neighbor);
@@ -92,17 +107,39 @@ function main() {
             return successors;
         }
 
+        function heuristic() {
+            let manhattanDist = Math.sqrt(Math.pow(goalNode.x + grid_x, 2) + Math.pow(goalNode.y + grid_y, 2));
+            return pathCost + manhattanDist;
+        }
+
+        function isGoal() {
+            return goal;
+        }
+
+        function isFringe() {
+            return fringe;
+        }
+
+        function isVisited() {
+            return visited;
+        }
+
         var publicAPI = {
             x: grid_x,
             y: grid_y,
             update: update,
+            updateParent: updateParent,
             setVisited: setVisited,
             setGoalNode: setGoalNode,
             setStartNode: setStartNode,
             setFringe: setFringe,
             getSuccessorList: getSuccessorList,
-            goal: goal,
-            visited: visited,
+            getParent: getParent,
+            isGoal: isGoal,
+            isVisited: isVisited,
+            isFringe: isFringe,
+            getWeight: getWeight,
+            heuristic: heuristic,
         };
 
         return publicAPI;
@@ -118,13 +155,14 @@ function main() {
 
 
     /* Set start and goal nodes */
-    var start = grid[26][19];
+    var start = grid[10][10];
     start.setStartNode();
     start.update();
 
-    var goal = grid[4][3];
-    goal.setGoalNode();
-    goal.update();
+    var goalNode = grid[4][3];
+    goalNode.setGoalNode();
+    goalNode.update();
+    console.log(goalNode.isGoal());
 
     /* A* search implementation */
     function astarSearch(start) {
@@ -137,8 +175,20 @@ function main() {
             epoch += 1;
 
             let node = open.nodes.shift();
-            if (node.goal === true) {
-                console.log("Found the node!");
+            if (node.isGoal() === true) {
+                function showSolution () {
+                    ctx.beginPath();
+                    ctx.moveTo(node.x * WIDTH + WIDTH/2, node.y * WIDTH + WIDTH/2);
+                    let par = node.getParent();
+                    while(par) {
+                        ctx.lineTo(par.x * WIDTH + WIDTH/2, par.y * WIDTH + WIDTH/2);
+                        par = par.getParent();
+                    }
+                    ctx.stroke();
+                };
+
+                setTimeout(showSolution, 2000);
+                console.log("FOUND the solution");
                 return node;
             }
 
@@ -150,6 +200,7 @@ function main() {
                 for (let i = 0; i < successors.length; i++) {
                     let fringeNode = successors[i];
                     fringeNode.setFringe();
+                    fringeNode.updateParent(node);
                     open.add(fringeNode);
                     setTimeout(fringeNode.update, (epoch * 50 + (i+1) * 30) % 1000);
                 }
@@ -169,7 +220,7 @@ var PriorityQueue = function() {
     that.add = function add (node) {
         that.nodes.push(node);
         that.nodes.sort(function (f, s) {
-            return s.weight - f.weight;
+            return f.heuristic() - s.heuristic();
         });
     };
 
