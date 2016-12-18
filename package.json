@@ -1,7 +1,7 @@
 {
-  "name": "astar-js",
+  "name": "visual-astar-js",
   "version": "0.0.1",
-  "description": "Simple graphical a-star search",
+  "description": "Simple graphical/visual a-star search",
   "main": "index.js",
   "dependencies": {},
   "devDependencies": {
@@ -13,5 +13,5 @@
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "oxalorg",
-  "license": "ISC"
+  "license": "MIT"
 }
