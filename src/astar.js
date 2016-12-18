@@ -11,7 +11,7 @@ function main() {
     }
 
     const WIDTH = 20;
-    const N = 16;
+    const N = 32;
 
     /* Lets create a NxN grid */
     var grid = (function(n) {
@@ -32,9 +32,10 @@ function main() {
         var grid_y = y;
         var color = 'white';
         var parentNode;
-        var pathCost = 0;
 
-        var weight = Math.floor(Math.random() * 8) + 1;
+        var weight = Math.floor(Math.random() * 999) + 1;
+        // var weight = 1;
+        var pathCost = weight;
 
         function update() {
             if (goal === true) {
@@ -44,7 +45,7 @@ function main() {
             } else if (visited === true) {
                 color = '#532abc';
             } else if (fringe === true) {
-                color = 'black';
+                color = '#3d89cb';
             }
 
             ctx.fillStyle = color;
@@ -57,13 +58,16 @@ function main() {
 
         function updateParent(par) {
             parentNode = par;
-            pathCost += par.getWeight();
+            pathCost += par.getPathCost();
         }
 
         function getParent() {
             return parentNode;
         }
 
+        function getPathCost() {
+            return pathCost;
+        }
 
         function getWeight() {
             return weight;
@@ -90,10 +94,11 @@ function main() {
             let y = [-1, 0, 1];
             
             let successors = [];
-            for (let i = x[0]; i < x.length; i++) {
-                for (let j = y[0]; j < y.length; j++) {
-                    let nb_x = grid_x + Number(i);
-                    let nb_y = grid_y + Number(j);
+            for (let i = 0; i < x.length; i++) {
+                for (let j = 0; j < y.length; j++) {
+                    if (x[i] == x[j]) continue;
+                    let nb_x = grid_x + Number(x[i]);
+                    let nb_y = grid_y + Number(x[j]);
                     if (grid[nb_x] == undefined || grid[nb_x][nb_y] == undefined) {
                         continue;
                     }
@@ -110,6 +115,7 @@ function main() {
         function heuristic() {
             let manhattanDist = Math.sqrt(Math.pow(goalNode.x + grid_x, 2) + Math.pow(goalNode.y + grid_y, 2));
             return pathCost + manhattanDist;
+            // return pathCost;
         }
 
         function isGoal() {
@@ -139,6 +145,7 @@ function main() {
             isVisited: isVisited,
             isFringe: isFringe,
             getWeight: getWeight,
+            getPathCost: getPathCost,
             heuristic: heuristic,
         };
 
@@ -155,11 +162,15 @@ function main() {
 
 
     /* Set start and goal nodes */
-    var start = grid[10][10];
+    let s_x = Math.floor(Math.random() * N);
+    let s_y = Math.floor(Math.random() * N);
+    var start = grid[s_x][s_y];
     start.setStartNode();
     start.update();
 
-    var goalNode = grid[4][3];
+    let g_x = Math.floor(Math.random() * N);
+    let g_y = Math.floor(Math.random() * N);
+    var goalNode = grid[g_x][g_y];
     goalNode.setGoalNode();
     goalNode.update();
     console.log(goalNode.isGoal());
@@ -195,14 +206,16 @@ function main() {
             if (closed.indexOf(node) <= -1) {
                 closed.push(node);
                 node.setVisited();
-                setTimeout(node.update, (epoch * 50) % 1000);
+                // setTimeout(node.update, (epoch * 50) % 2000);
+                node.update();
                 let successors = node.getSuccessorList();
                 for (let i = 0; i < successors.length; i++) {
                     let fringeNode = successors[i];
                     fringeNode.setFringe();
                     fringeNode.updateParent(node);
                     open.add(fringeNode);
-                    setTimeout(fringeNode.update, (epoch * 50 + (i+1) * 30) % 1000);
+                    // setTimeout(fringeNode.update, (epoch * 50 + (i+1) * 30) % 2000);
+                    fringeNode.update();
                 }
             }
 
