@@ -1,9 +1,6 @@
 //jshint esnext:true
-window.onload = function () {
-    main(32, 999);
-};
 
-function main(size=32, wt_range=999) {
+function visualAStar(size=32, wt_range=999) {
     var canvas = document.getElementById('astar');
     var ctx = canvas.getContext('2d');
 
