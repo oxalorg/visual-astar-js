@@ -1,7 +1,9 @@
 //jshint esnext:true
-window.onload = main;
+window.onload = function () {
+    main(32, 999);
+};
 
-function main() {
+function main(size=32, wt_range=999) {
     var canvas = document.getElementById('astar');
     var ctx = canvas.getContext('2d');
 
@@ -11,7 +13,11 @@ function main() {
     }
 
     const WIDTH = 20;
-    const N = 32;
+    let MAX_WT = wt_range;
+    let N = size;
+
+    ctx.canvas.width = WIDTH * N;
+    ctx.canvas.height = WIDTH * N;
 
     /* Lets create a NxN grid */
     var grid = (function(n) {
@@ -33,7 +39,7 @@ function main() {
         var color = 'white';
         var parentNode;
 
-        var weight = Math.floor(Math.random() * 999) + 1;
+        var weight = Math.floor(Math.random() * MAX_WT) + 1;
         // var weight = 1;
         var pathCost = weight;
 
@@ -96,7 +102,7 @@ function main() {
             let successors = [];
             for (let i = 0; i < x.length; i++) {
                 for (let j = 0; j < y.length; j++) {
-                    if (x[i] == x[j]) continue;
+                    if (x[i] == y[j]) continue;
                     let nb_x = grid_x + Number(x[i]);
                     let nb_y = grid_y + Number(x[j]);
                     if (grid[nb_x] == undefined || grid[nb_x][nb_y] == undefined) {
@@ -189,6 +195,7 @@ function main() {
             if (node.isGoal() === true) {
                 function showSolution () {
                     ctx.beginPath();
+                    ctx.strokeStyle = 'yellow';
                     ctx.moveTo(node.x * WIDTH + WIDTH/2, node.y * WIDTH + WIDTH/2);
                     let par = node.getParent();
                     while(par) {
@@ -198,7 +205,8 @@ function main() {
                     ctx.stroke();
                 };
 
-                setTimeout(showSolution, 2000);
+                // setTimeout(showSolution, 500);
+                showSolution();
                 console.log("FOUND the solution");
                 return node;
             }
